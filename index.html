@@ -132,6 +132,12 @@ Gespeicherte Aufnahmen:
 
 <div id="list"></div>
 
+<br>
+
+<button onclick="exportRecordings()">
+☁️ Aufnahmen exportieren
+</button>
+
 </div>
 
 </div>
@@ -418,6 +424,84 @@ html +=
 
 document.getElementById("list").innerHTML =
 html;
+
+
+};
+
+
+}
+async function exportRecordings(){
+
+
+let transaction =
+db.transaction(
+"aufnahmen",
+"readonly"
+);
+
+
+let store =
+transaction.objectStore("aufnahmen");
+
+
+let request =
+store.getAll();
+
+
+
+request.onsuccess=function(){
+
+
+let recordings=request.result;
+
+
+if(recordings.length===0){
+
+alert("Keine Aufnahmen vorhanden");
+
+return;
+
+}
+
+
+recordings.forEach((item,index)=>{
+
+
+let filename =
+String(index+1).padStart(3,"0")
++
+"_"
++
+item.name.replace(/\s+/g,"_")
++
+".mp4";
+
+
+
+let url =
+URL.createObjectURL(item.audio);
+
+
+
+let a =
+document.createElement("a");
+
+
+a.href=url;
+
+a.download=filename;
+
+
+a.click();
+
+
+});
+
+
+alert(
+recordings.length+
+" Aufnahmen exportiert"
+);
 
 
 };
