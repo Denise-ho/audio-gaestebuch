@@ -1,0 +1,10 @@
+{
+  "name": "Audio Gästebuch Niclas & Romina",
+  "short_name": "Audio Gästebuch",
+  "description": "Audio Gästebuch zur Hochzeit von Niclas & Romina am 01. August 2026",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#FFF8F2",
+  "theme_color": "#B8A1D9",
+  "lang": "de"
+}

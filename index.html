@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>
+Audio Gästebuch – Niclas & Romina
+</title>
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+
+body {
+    margin:0;
+    padding:30px;
+    background:#FFF8F2;
+    font-family:Arial, sans-serif;
+    text-align:center;
+}
+
+.box {
+
+    background:white;
+    border-radius:30px;
+    padding:30px;
+    max-width:420px;
+    margin:auto;
+
+}
+
+
+h1 {
+
+    color:#B8A1D9;
+    font-size:32px;
+
+}
+
+
+h2 {
+
+    color:#666;
+
+}
+
+
+button {
+
+    width:80%;
+    padding:18px;
+    margin:10px;
+    border-radius:30px;
+    border:none;
+    font-size:18px;
+    background:#A8D8EA;
+    color:#333;
+
+}
+
+
+input {
+
+    width:80%;
+    padding:15px;
+    border-radius:20px;
+    border:1px solid #ddd;
+    font-size:16px;
+
+}
+
+
+#status {
+
+    margin-top:20px;
+    color:#666;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="box">
+
+
+<h1>
+🎙️ Audio Gästebuch
+</h1>
+
+
+<h2>
+Niclas & Romina
+</h2>
+
+
+<p>
+01. August 2026
+</p>
+
+
+<p>
+Hinterlasse uns eine persönliche Nachricht ❤️
+</p>
+
+
+<input 
+id="name"
+placeholder="Dein Name">
+
+
+<br>
+
+
+<button>
+🎤 Aufnahme starten
+</button>
+
+
+<p id="status">
+Bereit
+</p>
+
+
+</div>
+
+<script>
+
+let recorder;
+let audioChunks = [];
+let timer;
+let seconds = 120;
+
+
+function startRecording(){
+
+let name = document.getElementById("name").value;
+
+
+if(name.trim() === ""){
+
+alert("Bitte zuerst deinen Namen eingeben.");
+return;
+
+}
+
+
+navigator.mediaDevices.getUserMedia({
+audio:true
+})
+
+.then(stream => {
+
+
+recorder = new MediaRecorder(stream);
+
+audioChunks = [];
+
+recorder.start();
+
+
+document.getElementById("status").innerHTML =
+"🔴 Aufnahme läuft";
+
+
+seconds = 120;
+
+
+timer = setInterval(()=>{
+
+seconds--;
+
+
+if(seconds <= 0){
+
+stopRecording();
+
+}
+
+},1000);
+
+
+
+recorder.ondataavailable = event => {
+
+audioChunks.push(event.data);
+
+};
+
+
+});
+
+
+}
+
+
+
+function stopRecording(){
+
+clearInterval(timer);
+
+
+if(!recorder){
+return;
+}
+
+
+recorder.stop();
+
+
+recorder.onstop = ()=>{
+
+
+let audioBlob = new Blob(
+audioChunks,
+{type:"audio/mp4"}
+);
+
+
+// Datei wird später hier gespeichert
+
+
+document.getElementById("status").innerHTML =
+"❤️ Vielen Dank für deine Nachricht!";
+
+
+setTimeout(()=>{
+
+
+document.getElementById("name").value="";
+
+document.getElementById("status").innerHTML =
+"Bereit";
+
+
+},3000);
+
+
+
+};
+
+
+}
+
+
+</script>
+
+</body>
+
+</html>
