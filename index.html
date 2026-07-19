@@ -430,35 +430,7 @@ html;
 
 
 }
-async function exportRecordings(){
 
-let transaction =
-db.transaction(
-"aufnahmen",
-"readonly"
-);
-
-
-let store =
-transaction.objectStore("aufnahmen");
-
-
-let request =
-store.getAll();
-
-
-request.onsuccess = async function(){
-
-let recordings = request.result;
-
-
-if(recordings.length === 0){
-
-alert("Keine Aufnahmen vorhanden");
-
-return;
-
-}
 
 
 /*
@@ -581,4 +553,4 @@ recordings.length+
 
 </body>
 
-</h
+</html>
