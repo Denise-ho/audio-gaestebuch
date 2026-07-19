@@ -214,20 +214,29 @@ clearTimeout(timer);
 recorder.stop();
 
 
-recorder.onstop=function(){
+recorder.onstop = async function(){
+
+let name = document.getElementById("name").value;
+
+let audioBlob = new Blob(
+audioChunks,
+{type:"audio/mp4"}
+);
 
 
-document.getElementById("status").innerHTML=
-"❤️ Vielen Dank für deine Nachricht!";
+await saveRecording(name, audioBlob);
+
+
+document.getElementById("status").innerHTML =
+"❤️ Vielen Dank! Aufnahme gespeichert";
 
 
 setTimeout(()=>{
 
 document.getElementById("name").value="";
 
-document.getElementById("status").innerHTML=
+document.getElementById("status").innerHTML =
 "Bereit";
-
 
 },3000);
 
@@ -237,7 +246,76 @@ document.getElementById("status").innerHTML=
 
 }
 
+let db;
 
+
+let request = indexedDB.open(
+"AudioGaestebuch",
+1
+);
+
+
+request.onupgradeneeded = function(event){
+
+db = event.target.result;
+
+db.createObjectStore(
+"aufnahmen",
+{
+keyPath:"id",
+autoIncrement:true
+}
+);
+
+};
+
+
+request.onsuccess=function(event){
+
+db=event.target.result;
+
+};
+
+
+
+function saveRecording(name, audioBlob){
+
+return new Promise((resolve)=>{
+
+
+let transaction =
+db.transaction(
+"aufnahmen",
+"readwrite"
+);
+
+
+let store =
+transaction.objectStore("aufnahmen");
+
+
+store.add({
+
+name:name,
+
+datum:new Date(),
+
+audio:audioBlob
+
+});
+
+
+transaction.oncomplete=function(){
+
+resolve();
+
+};
+
+
+});
+
+
+}
 </script>
 
 
