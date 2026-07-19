@@ -432,7 +432,6 @@ html;
 }
 async function exportRecordings(){
 
-
 let transaction =
 db.transaction(
 "aufnahmen",
@@ -448,18 +447,87 @@ let request =
 store.getAll();
 
 
+request.onsuccess = async function(){
 
-request.onsuccess=function(){
-
-
-let recordings=request.result;
+let recordings = request.result;
 
 
-if(recordings.length===0){
+if(recordings.length === 0){
 
 alert("Keine Aufnahmen vorhanden");
 
 return;
+
+}
+
+
+/*
+Für den nächsten Schritt:
+Die Dateien werden gesammelt vorbereitet.
+*/
+
+let exportList = [];
+
+
+recordings.forEach((item,index)=>{
+
+
+let filename =
+String(index+1).padStart(3,"0")
++
+"_"
++
+item.name
+.replace(/[^a-zA-Z0-9äöüÄÖÜß ]/g,"")
+.replace(/\s+/g,"_")
++
+".m4a";
+
+
+exportList.push({
+
+name: filename,
+
+audio: item.audio
+
+});
+
+
+});
+
+
+alert(
+exportList.length +
+" Aufnahmen für Export vorbereitet"
+);
+
+
+/*
+Test:
+Erste Datei exportieren
+*/
+
+let first = exportList[0];
+
+
+let url =
+URL.createObjectURL(first.audio);
+
+
+let link =
+document.createElement("a");
+
+
+link.href=url;
+
+link.download=first.name;
+
+
+link.click();
+
+
+};
+
 
 }
 
