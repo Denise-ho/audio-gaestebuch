@@ -85,7 +85,7 @@ button {
 </h1>
 
 
-<h2>
+<h2 onclick="openAdmin()">
 Niclas & Romina
 </h2>
 
@@ -119,7 +119,20 @@ Hinterlasse uns eine persönliche Nachricht ❤️
 <p id="status">
 Bereit
 </p>
+<div id="admin" style="display:none;">
 
+<h2>
+🔒 Admin-Bereich
+</h2>
+
+<p>
+Gespeicherte Aufnahmen:
+<span id="count">0</span>
+</p>
+
+<div id="list"></div>
+
+</div>
 
 </div>
 
@@ -313,6 +326,101 @@ resolve();
 
 
 });
+
+
+}
+let adminClicks = 0;
+
+
+function openAdmin(){
+
+adminClicks++;
+
+
+if(adminClicks >= 5){
+
+
+let pin = prompt(
+"Admin PIN eingeben:"
+);
+
+
+if(pin === "2026"){
+
+
+document.getElementById("admin").style.display="block";
+
+loadRecordings();
+
+
+}else{
+
+
+alert("Falsche PIN");
+
+}
+
+
+adminClicks=0;
+
+
+}
+
+
+}
+
+
+
+function loadRecordings(){
+
+
+let transaction =
+db.transaction(
+"aufnahmen",
+"readonly"
+);
+
+
+let store =
+transaction.objectStore("aufnahmen");
+
+
+let request =
+store.getAll();
+
+
+
+request.onsuccess=function(){
+
+
+let recordings=request.result;
+
+
+document.getElementById("count").innerHTML =
+recordings.length;
+
+
+let html="";
+
+
+recordings.forEach((item,index)=>{
+
+
+html += 
+(index+1)
++" - "
++item.name
++"<br>";
+
+
+});
+
+
+document.getElementById("list").innerHTML =
+html;
+
+
+};
 
 
 }
