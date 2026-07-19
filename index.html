@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<meta charset="UTF-8">
+<html lang="de">
 
 <head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>
 Audio Gästebuch – Niclas & Romina
 </title>
-
-<link rel="manifest" href="manifest.json">
 
 <style>
 
@@ -22,52 +22,42 @@ body {
 }
 
 .box {
-
     background:white;
     border-radius:30px;
     padding:30px;
     max-width:420px;
     margin:auto;
-
 }
-
 
 h1 {
-
     color:#B8A1D9;
     font-size:32px;
-
 }
-
 
 h2 {
-
     color:#666;
-
 }
-
-
-button {
-
-    width:80%;
-    padding:18px;
-    margin:10px;
-    border-radius:30px;
-    border:none;
-    font-size:18px;
-    background:#A8D8EA;
-    color:#333;
-
-}
-
 
 input {
-
     width:80%;
     padding:15px;
     border-radius:20px;
     border:1px solid #ddd;
     font-size:16px;
+}
+
+button {
+
+    width:85%;
+    padding:18px;
+    margin:10px;
+
+    border:none;
+    border-radius:30px;
+
+    background:#A8D8EA;
+
+    font-size:18px;
 
 }
 
@@ -110,16 +100,19 @@ Hinterlasse uns eine persönliche Nachricht ❤️
 </p>
 
 
-<input 
-id="name"
-placeholder="Dein Name">
+<input id="name" placeholder="Dein Name">
 
 
 <br>
 
 
-<button>
+<button onclick="startRecording()">
 🎤 Aufnahme starten
+</button>
+
+
+<button onclick="stopRecording()">
+⏹ Aufnahme beenden
 </button>
 
 
@@ -130,68 +123,72 @@ Bereit
 
 </div>
 
+
+
 <script>
 
+
 let recorder;
-let audioChunks = [];
+let audioChunks=[];
 let timer;
-let seconds = 120;
 
 
 function startRecording(){
 
-let name = document.getElementById("name").value;
+
+let name=document.getElementById("name").value;
 
 
-if(name.trim() === ""){
+if(name.trim()==""){
 
 alert("Bitte zuerst deinen Namen eingeben.");
+
 return;
 
 }
 
 
-navigator.mediaDevices.getUserMedia({
-audio:true
-})
+navigator.mediaDevices.getUserMedia({audio:true})
 
-.then(stream => {
+.then(stream=>{
 
 
-recorder = new MediaRecorder(stream);
+recorder=new MediaRecorder(stream);
 
-audioChunks = [];
+audioChunks=[];
+
 
 recorder.start();
 
 
-document.getElementById("status").innerHTML =
+document.getElementById("status").innerHTML=
 "🔴 Aufnahme läuft";
 
 
-seconds = 120;
+recorder.ondataavailable=function(e){
+
+audioChunks.push(e.data);
+
+};
 
 
-timer = setInterval(()=>{
 
-seconds--;
-
-
-if(seconds <= 0){
+timer=setTimeout(()=>{
 
 stopRecording();
 
-}
-
-},1000);
+},120000);
 
 
 
-recorder.ondataavailable = event => {
+})
 
-audioChunks.push(event.data);
 
-};
+.catch(error=>{
+
+
+document.getElementById("status").innerHTML=
+"Mikrofon Fehler: "+error.message;
 
 
 });
@@ -203,44 +200,36 @@ audioChunks.push(event.data);
 
 function stopRecording(){
 
-clearInterval(timer);
-
 
 if(!recorder){
+
 return;
+
 }
+
+
+clearTimeout(timer);
 
 
 recorder.stop();
 
 
-recorder.onstop = ()=>{
+recorder.onstop=function(){
 
 
-let audioBlob = new Blob(
-audioChunks,
-{type:"audio/mp4"}
-);
-
-
-// Datei wird später hier gespeichert
-
-
-document.getElementById("status").innerHTML =
+document.getElementById("status").innerHTML=
 "❤️ Vielen Dank für deine Nachricht!";
 
 
 setTimeout(()=>{
 
-
 document.getElementById("name").value="";
 
-document.getElementById("status").innerHTML =
+document.getElementById("status").innerHTML=
 "Bereit";
 
 
 },3000);
-
 
 
 };
@@ -250,6 +239,7 @@ document.getElementById("status").innerHTML =
 
 
 </script>
+
 
 </body>
 
