@@ -1,556 +1,163 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>
-Audio Gästebuch – Niclas & Romina
-</title>
-
+<title>Audio Gästebuch – Niclas & Romina</title>
 <style>
-
-body {
-    margin:0;
-    padding:30px;
-    background:#FFF8F2;
-    font-family:Arial, sans-serif;
-    text-align:center;
+body{
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+background:#f8f4ff;
+text-align:center;
+padding:20px;
+color:#333;
 }
-
-.box {
-    background:white;
-    border-radius:30px;
-    padding:30px;
-    max-width:420px;
-    margin:auto;
+.container{
+max-width:500px;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:20px;
+box-shadow:0 2px 10px rgba(0,0,0,.1);
 }
-
-h1 {
-    color:#B8A1D9;
-    font-size:32px;
+h1{color:#b8a2e3;}
+.date{color:#7fc8ff;font-weight:bold;}
+input,button{
+width:100%;
+padding:14px;
+margin:8px 0;
+border-radius:12px;
+border:1px solid #ddd;
+box-sizing:border-box;
 }
-
-h2 {
-    color:#666;
+button{
+background:#7fc8ff;
+color:white;
+border:none;
+font-size:16px;
 }
-
-input {
-    width:80%;
-    padding:15px;
-    border-radius:20px;
-    border:1px solid #ddd;
-    font-size:16px;
+.stopBtn{background:#b8a2e3;}
+#admin{
+display:none;
+margin-top:20px;
+padding-top:15px;
+border-top:1px solid #ddd;
+text-align:left;
 }
-
-button {
-
-    width:85%;
-    padding:18px;
-    margin:10px;
-
-    border:none;
-    border-radius:30px;
-
-    background:#A8D8EA;
-
-    font-size:18px;
-
-}
-
-
-#status {
-
-    margin-top:20px;
-    color:#666;
-
-}
-
 </style>
-
 </head>
-
-
 <body>
-
-
-<div class="box">
-
-
-<h1>
-🎙️ Audio Gästebuch
-</h1>
-
-
-<h2 onclick="openAdmin()">
-Niclas & Romina
-</h2>
-
-
-<p>
-01. August 2026
-</p>
-
-
-<p>
-Hinterlasse uns eine persönliche Nachricht ❤️
-</p>
-
+<div class="container">
+<h1 onclick="openAdmin()">Niclas &amp; Romina</h1>
+<p class="date">01. August 2026</p>
+<p>Hinterlasse uns eine persönliche Nachricht ❤️</p>
 
 <input id="name" placeholder="Dein Name">
 
+<button onclick="startRecording()">🎤 Aufnahme starten</button>
+<button class="stopBtn" onclick="stopRecording()">⏹ Aufnahme beenden</button>
 
-<br>
+<p id="status">Bereit</p>
 
-
-<button onclick="startRecording()">
-🎤 Aufnahme starten
-</button>
-
-
-<button onclick="stopRecording()">
-⏹ Aufnahme beenden
-</button>
-
-
-<p id="status">
-Bereit
-</p>
-<div id="admin" style="display:none;">
-
-<h2>
-🔒 Admin-Bereich
-</h2>
-
-<p>
-Gespeicherte Aufnahmen:
-<span id="count">0</span>
-</p>
-
+<div id="admin">
+<h3>🔒 Admin-Bereich</h3>
+<p>Gespeicherte Aufnahmen: <span id="count">0</span></p>
 <div id="list"></div>
-
-<br>
-
-<button onclick="exportRecordings()">
-☁️ Aufnahmen exportieren
-</button>
-
 </div>
-
 </div>
-
-
 
 <script>
-
-
-let recorder;
+let mediaRecorder;
 let audioChunks=[];
-let timer;
+let db;
+let adminClicks=0;
 
+const req=indexedDB.open("AudioGaestebuch",1);
 
-function startRecording(){
-
-
-let name=document.getElementById("name").value;
-
-
-if(name.trim()==""){
-
-alert("Bitte zuerst deinen Namen eingeben.");
-
-return;
-
-}
-
-
-navigator.mediaDevices.getUserMedia({audio:true})
-
-.then(stream=>{
-
-
-recorder=new MediaRecorder(stream);
-
-audioChunks=[];
-
-
-recorder.start();
-
-
-document.getElementById("status").innerHTML=
-"🔴 Aufnahme läuft";
-
-
-recorder.ondataavailable=function(e){
-
-audioChunks.push(e.data);
-
+req.onupgradeneeded=function(e){
+db=e.target.result;
+db.createObjectStore("aufnahmen",{keyPath:"id",autoIncrement:true});
 };
 
+req.onsuccess=function(e){
+db=e.target.result;
+};
 
+async function startRecording(){
+try{
+const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+audioChunks=[];
+mediaRecorder=new MediaRecorder(stream);
 
-timer=setTimeout(()=>{
+mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
 
-stopRecording();
+mediaRecorder.onstop=async function(){
+const name=document.getElementById("name").value.trim() || "Unbekannt";
+const blob=new Blob(audioChunks,{type:"audio/webm"});
 
-},120000);
-
-
-
-})
-
-
-.catch(error=>{
-
-
-document.getElementById("status").innerHTML=
-"Mikrofon Fehler: "+error.message;
-
-
+const tx=db.transaction("aufnahmen","readwrite");
+tx.objectStore("aufnahmen").add({
+name:name,
+date:new Date().toISOString(),
+audio:blob
 });
 
-
-}
-
-
-
-function stopRecording(){
-
-
-if(!recorder){
-
-return;
-
-}
-
-
-clearTimeout(timer);
-
-
-recorder.stop();
-
-
-recorder.onstop = async function(){
-
-let name = document.getElementById("name").value;
-
-let audioBlob = new Blob(
-audioChunks,
-{type:"audio/mp4"}
-);
-
-
-await saveRecording(name, audioBlob);
-
-
-document.getElementById("status").innerHTML =
-"❤️ Vielen Dank! Aufnahme gespeichert";
-
+document.getElementById("status").innerText="❤️ Vielen Dank! Aufnahme gespeichert";
 
 setTimeout(()=>{
-
 document.getElementById("name").value="";
-
-document.getElementById("status").innerHTML =
-"Bereit";
-
+document.getElementById("status").innerText="Bereit";
 },3000);
-
-
 };
 
+mediaRecorder.start();
+document.getElementById("status").innerText="🔴 Aufnahme läuft";
 
+setTimeout(()=>{
+if(mediaRecorder && mediaRecorder.state==="recording"){
+stopRecording();
+}
+},120000);
+
+}catch(err){
+document.getElementById("status").innerText="Mikrofon Fehler";
+console.error(err);
+}
 }
 
-let db;
-
-
-let request = indexedDB.open(
-"AudioGaestebuch",
-1
-);
-
-
-request.onupgradeneeded = function(event){
-
-db = event.target.result;
-
-db.createObjectStore(
-"aufnahmen",
-{
-keyPath:"id",
-autoIncrement:true
+function stopRecording(){
+if(mediaRecorder && mediaRecorder.state==="recording"){
+mediaRecorder.stop();
 }
-);
-
-};
-
-
-request.onsuccess=function(event){
-
-db=event.target.result;
-
-};
-
-
-
-function saveRecording(name, audioBlob){
-
-return new Promise((resolve)=>{
-
-
-let transaction =
-db.transaction(
-"aufnahmen",
-"readwrite"
-);
-
-
-let store =
-transaction.objectStore("aufnahmen");
-
-
-store.add({
-
-name:name,
-
-datum:new Date(),
-
-audio:audioBlob
-
-});
-
-
-transaction.oncomplete=function(){
-
-resolve();
-
-};
-
-
-});
-
-
 }
-let adminClicks = 0;
-
 
 function openAdmin(){
-alert("Admin Funktion gestartet");
 adminClicks++;
-
-
-if(adminClicks >= 5){
-
-
-let pin = prompt(
-"Admin PIN eingeben:"
-);
-
-
-if(pin === "2026"){
-
-
+if(adminClicks>=5){
+const pin=prompt("Admin PIN eingeben:");
+if(pin==="2026"){
 document.getElementById("admin").style.display="block";
-
 loadRecordings();
-
-
 }else{
-
-
 alert("Falsche PIN");
-
 }
-
-
 adminClicks=0;
-
-
 }
-
-
 }
-
-
 
 function loadRecordings(){
+const tx=db.transaction("aufnahmen","readonly");
+const store=tx.objectStore("aufnahmen");
+const r=store.getAll();
 
-
-let transaction =
-db.transaction(
-"aufnahmen",
-"readonly"
-);
-
-
-let store =
-transaction.objectStore("aufnahmen");
-
-
-let request =
-store.getAll();
-
-
-
-request.onsuccess=function(){
-
-
-let recordings=request.result;
-
-
-document.getElementById("count").innerHTML =
-recordings.length;
-
-
-let html="";
-
-
-recordings.forEach((item,index)=>{
-
-
-html += 
-(index+1)
-+" - "
-+item.name
-+"<br>";
-
-
-});
-
-
-document.getElementById("list").innerHTML =
-html;
-
-
+r.onsuccess=function(){
+const data=r.result;
+document.getElementById("count").textContent=data.length;
+document.getElementById("list").innerHTML=data.map((x,i)=>
+`${i+1} - ${x.name}`
+).join("<br>");
 };
-
-
-}
-
-
-
-/*
-Für den nächsten Schritt:
-Die Dateien werden gesammelt vorbereitet.
-*/
-
-let exportList = [];
-
-
-recordings.forEach((item,index)=>{
-
-
-let filename =
-String(index+1).padStart(3,"0")
-+
-"_"
-+
-item.name
-.replace(/[^a-zA-Z0-9äöüÄÖÜß ]/g,"")
-.replace(/\s+/g,"_")
-+
-".m4a";
-
-
-exportList.push({
-
-name: filename,
-
-audio: item.audio
-
-});
-
-
-});
-
-
-alert(
-exportList.length +
-" Aufnahmen für Export vorbereitet"
-);
-
-
-/*
-Test:
-Erste Datei exportieren
-*/
-
-let first = exportList[0];
-
-
-let url =
-URL.createObjectURL(first.audio);
-
-
-let link =
-document.createElement("a");
-
-
-link.href=url;
-
-link.download=first.name;
-
-
-link.click();
-
-
-};
-
-
-}
-
-
-recordings.forEach((item,index)=>{
-
-
-let filename =
-String(index+1).padStart(3,"0")
-+
-"_"
-+
-item.name.replace(/\s+/g,"_")
-+
-".mp4";
-
-
-
-let url =
-URL.createObjectURL(item.audio);
-
-
-
-let a =
-document.createElement("a");
-
-
-a.href=url;
-
-a.download=filename;
-
-
-a.click();
-
-
-});
-
-
-alert(
-recordings.length+
-" Aufnahmen exportiert"
-);
-
-
-};
-
-
 }
 </script>
-
-
 </body>
-
 </html>
