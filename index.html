@@ -1,163 +1,67 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Audio Gästebuch – Niclas & Romina</title>
-<style>
-body{
-font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-background:#f8f4ff;
-text-align:center;
-padding:20px;
-color:#333;
-}
-.container{
-max-width:500px;
-margin:auto;
-background:white;
-padding:20px;
-border-radius:20px;
-box-shadow:0 2px 10px rgba(0,0,0,.1);
-}
-h1{color:#b8a2e3;}
-.date{color:#7fc8ff;font-weight:bold;}
-input,button{
-width:100%;
-padding:14px;
-margin:8px 0;
-border-radius:12px;
-border:1px solid #ddd;
-box-sizing:border-box;
-}
-button{
-background:#7fc8ff;
-color:white;
-border:none;
-font-size:16px;
-}
-.stopBtn{background:#b8a2e3;}
-#admin{
-display:none;
-margin-top:20px;
-padding-top:15px;
-border-top:1px solid #ddd;
-text-align:left;
-}
-</style>
+
+<title>Audio Gästebuch - Niclas & Romina</title>
+
+<link rel="stylesheet" href="style.css">
+
 </head>
+
+
 <body>
+
+
 <div class="container">
-<h1 onclick="openAdmin()">Niclas &amp; Romina</h1>
-<p class="date">01. August 2026</p>
-<p>Hinterlasse uns eine persönliche Nachricht ❤️</p>
 
-<input id="name" placeholder="Dein Name">
 
-<button onclick="startRecording()">🎤 Aufnahme starten</button>
-<button class="stopBtn" onclick="stopRecording()">⏹ Aufnahme beenden</button>
+<h1>
+🎙️ Audio Gästebuch
+</h1>
 
-<p id="status">Bereit</p>
 
-<div id="admin">
-<h3>🔒 Admin-Bereich</h3>
-<p>Gespeicherte Aufnahmen: <span id="count">0</span></p>
-<div id="list"></div>
+<h2>
+Niclas & Romina
+</h2>
+
+
+<p class="date">
+01. August 2026
+</p>
+
+
+<input 
+id="name"
+type="text"
+placeholder="Dein Name">
+
+
+<button id="start">
+🎤 Aufnahme starten
+</button>
+
+
+<button id="stop" disabled>
+⏹ Aufnahme beenden
+</button>
+
+
+<p id="status">
+Bereit
+</p>
+
+
 </div>
-</div>
 
-<script>
-let mediaRecorder;
-let audioChunks=[];
-let db;
-let adminClicks=0;
 
-const req=indexedDB.open("AudioGaestebuch",1);
+<script src="app.js"></script>
 
-req.onupgradeneeded=function(e){
-db=e.target.result;
-db.createObjectStore("aufnahmen",{keyPath:"id",autoIncrement:true});
-};
 
-req.onsuccess=function(e){
-db=e.target.result;
-};
-
-async function startRecording(){
-try{
-const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-audioChunks=[];
-mediaRecorder=new MediaRecorder(stream);
-
-mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
-
-mediaRecorder.onstop=async function(){
-const name=document.getElementById("name").value.trim() || "Unbekannt";
-const blob=new Blob(audioChunks,{type:"audio/webm"});
-
-const tx=db.transaction("aufnahmen","readwrite");
-tx.objectStore("aufnahmen").add({
-name:name,
-date:new Date().toISOString(),
-audio:blob
-});
-
-document.getElementById("status").innerText="❤️ Vielen Dank! Aufnahme gespeichert";
-
-setTimeout(()=>{
-document.getElementById("name").value="";
-document.getElementById("status").innerText="Bereit";
-},3000);
-};
-
-mediaRecorder.start();
-document.getElementById("status").innerText="🔴 Aufnahme läuft";
-
-setTimeout(()=>{
-if(mediaRecorder && mediaRecorder.state==="recording"){
-stopRecording();
-}
-},120000);
-
-}catch(err){
-document.getElementById("status").innerText="Mikrofon Fehler";
-console.error(err);
-}
-}
-
-function stopRecording(){
-if(mediaRecorder && mediaRecorder.state==="recording"){
-mediaRecorder.stop();
-}
-}
-
-function openAdmin(){
-adminClicks++;
-if(adminClicks>=5){
-const pin=prompt("Admin PIN eingeben:");
-if(pin==="2026"){
-document.getElementById("admin").style.display="block";
-loadRecordings();
-}else{
-alert("Falsche PIN");
-}
-adminClicks=0;
-}
-}
-
-function loadRecordings(){
-const tx=db.transaction("aufnahmen","readonly");
-const store=tx.objectStore("aufnahmen");
-const r=store.getAll();
-
-r.onsuccess=function(){
-const data=r.result;
-document.getElementById("count").textContent=data.length;
-document.getElementById("list").innerHTML=data.map((x,i)=>
-`${i+1} - ${x.name}`
-).join("<br>");
-};
-}
-</script>
 </body>
+
 </html>
