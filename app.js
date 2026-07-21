@@ -42,14 +42,43 @@ stopButton.disabled = false;
 };
 
 
-recorder.onstop = () => {
+recorder.onstop = async () => {
+
+
+let name =
+document.getElementById("name").value;
+
+
+let audioBlob =
+new Blob(
+audioChunks,
+{
+type:"audio/webm"
+}
+);
+
+
+
+await saveRecording(
+name,
+audioBlob
+);
+
 
 
 stream.getTracks().forEach(track => track.stop());
 
 
 status.innerHTML =
-"❤️ Vielen Dank! Aufnahme beendet";
+"❤️ Vielen Dank! Aufnahme gespeichert";
+
+
+startButton.disabled = false;
+
+stopButton.disabled = true;
+
+
+};
 
 
 startButton.disabled = false;
