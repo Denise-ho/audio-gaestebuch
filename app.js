@@ -6,31 +6,32 @@ const stopButton = document.getElementById("stop");
 const status = document.getElementById("status");
 
 
-startButton.onclick = async function(){
-
+startButton.onclick = async () => {
 
 try {
 
-
-let stream = await navigator.mediaDevices.getUserMedia({
-audio:true
+const stream = await navigator.mediaDevices.getUserMedia({
+audio: true
 });
 
 
 recorder = new MediaRecorder(stream);
 
-
 audioChunks = [];
 
 
-recorder.ondataavailable = function(event){
+recorder.ondataavailable = (event) => {
+
+if(event.data.size > 0){
 
 audioChunks.push(event.data);
+
+}
 
 };
 
 
-recorder.onstart = function(){
+recorder.onstart = () => {
 
 status.innerHTML = "🔴 Aufnahme läuft";
 
@@ -41,19 +42,25 @@ stopButton.disabled = false;
 };
 
 
+recorder.onstop = () => {
+
+
+stream.getTracks().forEach(track => track.stop());
+
+
+status.innerHTML =
+"❤️ Vielen Dank! Aufnahme beendet";
+
+
+startButton.disabled = false;
+
+stopButton.disabled = true;
+
+
+};
+
 
 recorder.start();
-
-
-setTimeout(function(){
-
-if(recorder && recorder.state === "recording"){
-
-recorder.stop();
-
-}
-
-},120000);
 
 
 }
@@ -70,7 +77,7 @@ status.innerHTML =
 
 
 
-stopButton.onclick = function(){
+stopButton.onclick = () => {
 
 
 if(recorder && recorder.state === "recording"){
@@ -78,22 +85,5 @@ if(recorder && recorder.state === "recording"){
 recorder.stop();
 
 }
-
-
-};
-
-
-
-recorder.onstop = function(){
-
-
-status.innerHTML =
-"❤️ Vielen Dank! Aufnahme beendet";
-
-
-startButton.disabled = false;
-
-stopButton.disabled = true;
-
 
 };
