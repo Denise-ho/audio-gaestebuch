@@ -79,6 +79,8 @@ status.innerHTML =
 
 stopButton.onclick = () => {
 
+alert("Stop Button gedrückt");
+
 
 if(recorder && recorder.state === "recording"){
 
