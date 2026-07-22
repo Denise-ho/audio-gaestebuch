@@ -115,6 +115,8 @@ function openAdmin() {
 function loadRecordings() {
 document.getElementById("downloadAll").onclick = () => {
 
+    alert("Download-Button wurde gedrückt");
+
     const transaction =
         db.transaction("aufnahmen", "readonly");
 
