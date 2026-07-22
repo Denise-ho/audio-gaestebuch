@@ -113,67 +113,105 @@ function openAdmin() {
 // ---------------------------
 
 function loadRecordings() {
-document.getElementById("downloadAll").onclick = () => {
-
-    const transaction =
-        db.transaction("aufnahmen", "readonly");
-
-    const store =
-        transaction.objectStore("aufnahmen");
-
-    const request =
-        store.getAll();
+document.getElementById("downloadAll").onclick = async () => {
 
 
-    request.onsuccess = () => {
-
-        const recordings = request.result;
-
-
-        if (recordings.length === 0) {
-
-            alert("Keine Aufnahmen vorhanden.");
-
-            return;
-
-        }
+const transaction =
+db.transaction("aufnahmen", "readonly");
 
 
-        let item = recordings[0];
+const store =
+transaction.objectStore("aufnahmen");
 
 
-        const url =
-            URL.createObjectURL(item.audio);
+const request =
+store.getAll();
 
 
-        const a =
-            document.createElement("a");
+
+request.onsuccess = async () => {
 
 
-        a.href = url;
+const recordings = request.result;
 
 
-        a.download =
-            "Testaufnahme_" +
-            (item.name || "Gast") +
-            ".webm";
+if(recordings.length === 0){
+
+alert("Keine Aufnahmen vorhanden.");
+
+return;
+
+}
 
 
-        document.body.appendChild(a);
 
-        a.click();
-
-        document.body.removeChild(a);
+const zip = new JSZip();
 
 
-        setTimeout(() => {
 
-            URL.revokeObjectURL(url);
-
-        }, 1000);
+recordings.forEach((item,index)=>{
 
 
-    };
+const name =
+(item.name || "Gast")
+.replace(/[^a-zA-Z0-9äöüÄÖÜß ]/g,"")
+.replace(/\s+/g,"_");
+
+
+
+zip.file(
+
+`${String(index+1).padStart(3,"0")}_${name}.webm`,
+
+item.audio
+
+);
+
+
+});
+
+
+
+const blob =
+await zip.generateAsync({
+type:"blob"
+});
+
+
+
+const url =
+URL.createObjectURL(blob);
+
+
+
+const a =
+document.createElement("a");
+
+
+a.href=url;
+
+a.download =
+"Niclas_Romina_Audio_Gaestebuch.zip";
+
+
+document.body.appendChild(a);
+
+a.click();
+
+document.body.removeChild(a);
+
+
+
+URL.revokeObjectURL(url);
+
+
+alert(
+recordings.length +
+" Aufnahmen als ZIP exportiert"
+);
+
 
 };
 
+
+};
