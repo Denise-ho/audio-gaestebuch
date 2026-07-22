@@ -113,7 +113,52 @@ function openAdmin() {
 // ---------------------------
 
 function loadRecordings() {
+document.getElementById("downloadAll").onclick = () => {
 
+    const transaction =
+        db.transaction("aufnahmen", "readonly");
+
+    const store =
+        transaction.objectStore("aufnahmen");
+
+    const request =
+        store.getAll();
+
+    request.onsuccess = () => {
+
+        const recordings = request.result;
+
+        if (recordings.length === 0) {
+            alert("Keine Aufnahmen vorhanden.");
+            return;
+        }
+
+        recordings.forEach((item, index) => {
+
+            const url = URL.createObjectURL(item.audio);
+
+            const a = document.createElement("a");
+
+            const name =
+                (item.name || "Unbekannt")
+                .replace(/[^a-zA-Z0-9äöüÄÖÜß ]/g, "")
+                .replace(/\s+/g, "_");
+
+            a.href = url;
+            a.download =
+                `${String(index + 1).padStart(3, "0")}_${name}.webm`;
+
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            URL.revokeObjectURL(url);
+
+        });
+
+    };
+
+};
     const transaction =
         db.transaction("aufnahmen", "readonly");
 
