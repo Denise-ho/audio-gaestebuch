@@ -118,3 +118,112 @@ recorder.stop();
 }
 
 };
+let adminClicks = 0;
+
+
+function openAdmin(){
+
+
+adminClicks++;
+
+
+if(adminClicks >= 5){
+
+
+let pin = prompt(
+"Admin PIN:"
+);
+
+
+if(pin === "2026"){
+
+
+document.getElementById("admin").style.display="block";
+
+
+loadRecordings();
+
+
+}
+else{
+
+
+alert("Falsche PIN");
+
+
+}
+
+
+adminClicks = 0;
+
+
+}
+
+
+}
+
+
+
+function loadRecordings(){
+
+
+let transaction =
+db.transaction(
+"aufnahmen",
+"readonly"
+);
+
+
+let store =
+transaction.objectStore(
+"aufnahmen"
+);
+
+
+
+let request =
+store.getAll();
+
+
+
+request.onsuccess=function(){
+
+
+let recordings =
+request.result;
+
+
+
+document.getElementById("count").innerHTML =
+recordings.length;
+
+
+
+let text="";
+
+
+recordings.forEach((item,index)=>{
+
+
+text +=
+(index+1)
++
+" - "
++
+item.name
++
+"<br>";
+
+
+});
+
+
+
+document.getElementById("list").innerHTML =
+text;
+
+
+};
+
+
+}

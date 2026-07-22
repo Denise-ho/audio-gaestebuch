@@ -25,10 +25,9 @@
 </h1>
 
 
-<h2>
+<h2 onclick="openAdmin()">
 Niclas & Romina
 </h2>
-
 
 <p class="date">
 01. August 2026
@@ -54,7 +53,20 @@ placeholder="Dein Name">
 <p id="status">
 Bereit
 </p>
+<div id="admin" style="display:none;">
 
+<h3>
+🔒 Admin-Bereich
+</h3>
+
+<p>
+Gespeicherte Aufnahmen:
+<span id="count">0</span>
+</p>
+
+<div id="list"></div>
+
+</div>
 
 </div>
 
