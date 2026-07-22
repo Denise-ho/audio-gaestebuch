@@ -115,8 +115,6 @@ function openAdmin() {
 function loadRecordings() {
 document.getElementById("downloadAll").onclick = () => {
 
-    alert("Download-Button wurde gedrückt");
-
     const transaction =
         db.transaction("aufnahmen", "readonly");
 
@@ -126,69 +124,56 @@ document.getElementById("downloadAll").onclick = () => {
     const request =
         store.getAll();
 
+
     request.onsuccess = () => {
 
         const recordings = request.result;
 
+
         if (recordings.length === 0) {
+
             alert("Keine Aufnahmen vorhanden.");
+
             return;
+
         }
 
-        recordings.forEach((item, index) => {
 
-            const url = URL.createObjectURL(item.audio);
+        let item = recordings[0];
 
-            const a = document.createElement("a");
 
-            const name =
-                (item.name || "Unbekannt")
-                .replace(/[^a-zA-Z0-9äöüÄÖÜß ]/g, "")
-                .replace(/\s+/g, "_");
+        const url =
+            URL.createObjectURL(item.audio);
 
-            a.href = url;
-            a.download =
-                `${String(index + 1).padStart(3, "0")}_${name}.webm`;
 
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+        const a =
+            document.createElement("a");
+
+
+        a.href = url;
+
+
+        a.download =
+            "Testaufnahme_" +
+            (item.name || "Gast") +
+            ".webm";
+
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        document.body.removeChild(a);
+
+
+        setTimeout(() => {
 
             URL.revokeObjectURL(url);
 
-        });
+        }, 1000);
+
 
     };
 
 };
-    const transaction =
-        db.transaction("aufnahmen", "readonly");
 
-    const store =
-        transaction.objectStore("aufnahmen");
-
-    const request =
-        store.getAll();
-
-    request.onsuccess = () => {
-
-        const recordings = request.result;
-
-        document.getElementById("count").textContent =
-            recordings.length;
-
-        let html = "";
-
-        recordings.forEach((item, index) => {
-
-            html += `
-                ${index + 1} - ${item.name}<br>
-            `;
-
-        });
-
-        document.getElementById("list").innerHTML = html;
-
-    };
-
-}
