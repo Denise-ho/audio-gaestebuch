@@ -113,105 +113,35 @@ function openAdmin() {
 // ---------------------------
 
 function loadRecordings() {
-document.getElementById("downloadAll").onclick = async () => {
 
+    const transaction =
+        db.transaction("aufnahmen", "readonly");
 
-const transaction =
-db.transaction("aufnahmen", "readonly");
+    const store =
+        transaction.objectStore("aufnahmen");
 
+    const request =
+        store.getAll();
 
-const store =
-transaction.objectStore("aufnahmen");
+    request.onsuccess = () => {
 
+        const recordings = request.result;
 
-const request =
-store.getAll();
+        document.getElementById("count").textContent =
+            recordings.length;
 
+        let html = "";
 
+        recordings.forEach((item, index) => {
 
-request.onsuccess = async () => {
+            html += `
+                ${index + 1} - ${item.name}<br>
+            `;
 
+        });
 
-const recordings = request.result;
+        document.getElementById("list").innerHTML = html;
 
-
-if(recordings.length === 0){
-
-alert("Keine Aufnahmen vorhanden.");
-
-return;
+    };
 
 }
-
-
-
-const zip = new JSZip();
-
-
-
-recordings.forEach((item,index)=>{
-
-
-const name =
-(item.name || "Gast")
-.replace(/[^a-zA-Z0-9äöüÄÖÜß ]/g,"")
-.replace(/\s+/g,"_");
-
-
-
-zip.file(
-
-`${String(index+1).padStart(3,"0")}_${name}.webm`,
-
-item.audio
-
-);
-
-
-});
-
-
-
-const blob =
-await zip.generateAsync({
-type:"blob"
-});
-
-
-
-const url =
-URL.createObjectURL(blob);
-
-
-
-const a =
-document.createElement("a");
-
-
-a.href=url;
-
-a.download =
-"Niclas_Romina_Audio_Gaestebuch.zip";
-
-
-document.body.appendChild(a);
-
-a.click();
-
-document.body.removeChild(a);
-
-
-
-URL.revokeObjectURL(url);
-
-
-alert(
-recordings.length +
-" Aufnahmen als ZIP exportiert"
-);
-
-
-};
-
-
-};
