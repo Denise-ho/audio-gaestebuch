@@ -145,3 +145,85 @@ function loadRecordings() {
     };
 
 }
+// ---------------------------
+// Aufnahmen herunterladen
+// ---------------------------
+
+document.getElementById("downloadAll").onclick = () => {
+
+    const transaction =
+        db.transaction("aufnahmen", "readonly");
+
+    const store =
+        transaction.objectStore("aufnahmen");
+
+    const request =
+        store.getAll();
+
+
+    request.onsuccess = () => {
+
+        const recordings = request.result;
+
+
+        if (recordings.length === 0) {
+
+            alert("Keine Aufnahmen vorhanden.");
+
+            return;
+
+        }
+
+
+        recordings.forEach((item, index) => {
+
+
+            const url =
+                URL.createObjectURL(item.audio);
+
+
+            const a =
+                document.createElement("a");
+
+
+            const name =
+                (item.name || "Gast")
+                .replace(/[\\/:*?"<>|]/g, "")
+                .replace(/\s+/g, "_");
+
+
+            a.href = url;
+
+            a.download =
+                String(index + 1).padStart(3,"0")
+                + "_"
+                + name
+                + ".webm";
+
+
+            document.body.appendChild(a);
+
+            a.click();
+
+            document.body.removeChild(a);
+
+
+            setTimeout(() => {
+
+                URL.revokeObjectURL(url);
+
+            },1000);
+
+
+        });
+
+
+        alert(
+            recordings.length +
+            " Aufnahmen wurden zum Download vorbereitet."
+        );
+
+
+    };
+
+};
