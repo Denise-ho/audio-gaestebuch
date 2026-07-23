@@ -149,86 +149,18 @@ function loadRecordings() {
 // Aufnahmen herunterladen
 // ---------------------------
 
-document.getElementById("downloadAll").onclick = () => {
+document.getElementById("downloadAll").onclick = async () => {
 
-    const transaction = db.transaction(
-        "aufnahmen",
-        "readonly"
-    );
+    alert("Start");
 
-    const store = transaction.objectStore(
-        "aufnahmen"
-    );
+    if (typeof JSZip === "undefined") {
 
-    const request = store.getAll();
+        alert("JSZip fehlt");
 
+        return;
 
-    request.onsuccess = () => {
+    }
 
-        const recordings = request.result;
-
-
-        let index = 0;
-
-
-        function downloadNext() {
-
-
-            if (index >= recordings.length) {
-
-                alert(
-                    "Alle Aufnahmen wurden vorbereitet."
-                );
-
-                return;
-
-            }
-
-
-            const item = recordings[index];
-
-
-            const url = URL.createObjectURL(
-                item.audio
-            );
-
-
-            const link = document.createElement("a");
-
-            link.href = url;
-
-            link.download =
-                String(index + 1).padStart(3, "0")
-                + "_"
-                + item.name
-                + ".webm";
-
-
-            document.body.appendChild(link);
-
-            link.click();
-
-            document.body.removeChild(link);
-
-
-            setTimeout(() => {
-
-                URL.revokeObjectURL(url);
-
-                index++;
-
-                downloadNext();
-
-
-            }, 1500);
-
-
-        }
-
-
-        downloadNext();
-
-
-    };
+    alert("JSZip geladen");
 
 };
