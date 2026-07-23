@@ -151,9 +151,6 @@ function loadRecordings() {
 
 document.getElementById("downloadAll").onclick = () => {
 
-    alert(typeof JSZip);
-
-};
 
     const transaction =
         db.transaction("aufnahmen", "readonly");
