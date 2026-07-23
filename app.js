@@ -151,6 +151,88 @@ function loadRecordings() {
 
 document.getElementById("downloadAll").onclick = async () => {
 
-alert(window.JSZip ? "JSZip ist da" : "JSZip fehlt");
+    const transaction = db.transaction(
+        "aufnahmen",
+        "readonly"
+    );
+
+    const store = transaction.objectStore(
+        "aufnahmen"
+    );
+
+    const request = store.getAll();
+
+
+    request.onsuccess = async () => {
+
+        const recordings = request.result;
+
+
+        if (recordings.length === 0) {
+
+            alert("Keine Aufnahmen vorhanden.");
+
+            return;
+
+        }
+
+
+        const zip = new JSZip();
+
+
+        recordings.forEach((item, index) => {
+
+            const name =
+                (item.name || "Gast")
+                .replace(/[\\/:*?"<>|]/g, "")
+                .replace(/\s+/g, "_");
+
+
+            const filename =
+                String(index + 1).padStart(3, "0")
+                + "_"
+                + name
+                + ".webm";
+
+
+            zip.file(
+                filename,
+                item.audio
+            );
+
+        });
+
+
+        const blob = await zip.generateAsync({
+            type: "blob"
+        });
+
+
+        const url = URL.createObjectURL(blob);
+
+
+        const link = document.createElement("a");
+
+        link.href = url;
+
+        link.download =
+            "Niclas_Romina_Audio_Gaestebuch.zip";
+
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+
+
+        URL.revokeObjectURL(url);
+
+
+        alert(
+            "ZIP-Datei wurde erstellt."
+        );
+
+    };
 
 };
