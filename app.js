@@ -151,14 +151,16 @@ function loadRecordings() {
 
 document.getElementById("downloadAll").onclick = () => {
 
-    const transaction =
-        db.transaction("aufnahmen", "readonly");
+    const transaction = db.transaction(
+        "aufnahmen",
+        "readonly"
+    );
 
-    const store =
-        transaction.objectStore("aufnahmen");
+    const store = transaction.objectStore(
+        "aufnahmen"
+    );
 
-    const request =
-        store.getAll();
+    const request = store.getAll();
 
 
     request.onsuccess = () => {
@@ -177,52 +179,46 @@ document.getElementById("downloadAll").onclick = () => {
 
         recordings.forEach((item, index) => {
 
+            const url = URL.createObjectURL(item.audio);
 
-            const url =
-                URL.createObjectURL(item.audio);
+            const link = document.createElement("a");
 
+            link.href = url;
 
-            const a =
-                document.createElement("a");
-
-
-            const name =
-                (item.name || "Gast")
-                .replace(/[\\/:*?"<>|]/g, "")
-                .replace(/\s+/g, "_");
+            link.download =
+                (index + 1) +
+                "_" +
+                item.name +
+                ".webm";
 
 
-            a.href = url;
+            document.body.appendChild(link);
 
-            a.download =
-                String(index + 1).padStart(3,"0")
-                + "_"
-                + name
-                + ".webm";
+            link.click();
 
-
-            document.body.appendChild(a);
-
-            a.click();
-
-            document.body.removeChild(a);
+            document.body.removeChild(link);
 
 
             setTimeout(() => {
 
                 URL.revokeObjectURL(url);
 
-            },1000);
-
+            }, 1000);
 
         });
 
 
         alert(
             recordings.length +
-            " Aufnahmen wurden zum Download vorbereitet."
+            " Aufnahme(n) heruntergeladen"
         );
 
+    };
+
+
+    request.onerror = () => {
+
+        alert("Fehler beim Lesen der Aufnahmen");
 
     };
 
