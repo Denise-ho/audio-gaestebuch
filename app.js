@@ -151,6 +151,11 @@ function loadRecordings() {
 
 document.getElementById("downloadAll").onclick = () => {
 
+    if (!db) {
+        alert("Datenbank noch nicht bereit");
+        return;
+    }
+
     const transaction = db.transaction(
         "aufnahmen",
         "readonly"
@@ -165,60 +170,14 @@ document.getElementById("downloadAll").onclick = () => {
 
     request.onsuccess = () => {
 
-        const recordings = request.result;
-
-
-        if (recordings.length === 0) {
-
-            alert("Keine Aufnahmen vorhanden.");
-
-            return;
-
-        }
-
-
-        recordings.forEach((item, index) => {
-
-            const url = URL.createObjectURL(item.audio);
-
-            const link = document.createElement("a");
-
-            link.href = url;
-
-            link.download =
-                (index + 1) +
-                "_" +
-                item.name +
-                ".webm";
-
-
-            document.body.appendChild(link);
-
-            link.click();
-
-            document.body.removeChild(link);
-
-
-            setTimeout(() => {
-
-                URL.revokeObjectURL(url);
-
-            }, 1000);
-
-        });
-
-
-        alert(
-            recordings.length +
-            " Aufnahme(n) heruntergeladen"
-        );
+        alert("Aufnahmen gefunden: " + request.result.length);
 
     };
 
 
     request.onerror = () => {
 
-        alert("Fehler beim Lesen der Aufnahmen");
+        alert("Fehler beim Laden der Aufnahmen");
 
     };
 
