@@ -151,16 +151,6 @@ function loadRecordings() {
 
 document.getElementById("downloadAll").onclick = async () => {
 
-    alert("Start");
-
-    if (typeof JSZip === "undefined") {
-
-        alert("JSZip fehlt");
-
-        return;
-
-    }
-
-    alert("JSZip geladen");
+alert(window.JSZip ? "JSZip ist da" : "JSZip fehlt");
 
 };
